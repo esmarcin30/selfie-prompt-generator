@@ -5,60 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Selfie Prompt Generator</title>
   <style>
+    :root {
+      --bg-light: #f5f5f5;
+      --bg-dark: #1e1e1e;
+      --text-light: #000;
+      --text-dark: #fff;
+      --card-light: #ffffff;
+      --card-dark: #2c2c2c;
+      --primary: #0077ff;
+      --accent: #ff4081;
+    }
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 20px;
-      background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
-      max-width: 600px;
+      background: var(--bg-light);
+      color: var(--text-light);
+      max-width: 700px;
       margin: auto;
+      transition: all 0.3s ease;
+    }
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
     }
     h1 {
       text-align: center;
       margin-bottom: 20px;
+      font-size: 2rem;
+      color: var(--primary);
     }
     label {
       display: block;
-      margin-top: 15px;
+      margin-top: 20px;
       font-weight: bold;
     }
     select, input[type="text"] {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid #ccc;
+      font-size: 1rem;
     }
-    button {
+    button, a.toggle, #chatLink {
       margin-top: 20px;
       padding: 12px 20px;
       font-size: 16px;
       cursor: pointer;
-      background-color: #111;
+      background-color: var(--primary);
       color: #fff;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s ease;
+    }
+    button:hover, a.toggle:hover, #chatLink:hover {
+      background-color: var(--accent);
     }
     #output {
       margin-top: 30px;
-      background: #fff;
+      background: var(--card-light);
       padding: 20px;
-      border-radius: 8px;
+      border-radius: 10px;
       white-space: pre-wrap;
       font-family: monospace;
       font-size: 14px;
     }
-    #copyBtn {
-      display: none;
-      margin-top: 10px;
-      background-color: #333;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
+    body.dark #output {
+      background: var(--card-dark);
+    }
+    #copyBtn, #chatLink {
+      margin-right: 10px;
+    }
+    .center-buttons {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .toggle {
+      float: right;
+      background-color: transparent;
+      color: var(--primary);
+      font-weight: bold;
+      border: 2px solid var(--primary);
+    }
+    .toggle:hover {
+      color: var(--accent);
+      border-color: var(--accent);
     }
   </style>
 </head>
 <body>
   <h1>📸 Selfie Prompt Generator</h1>
+
+  <a class="toggle" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</a>
 
   <label>1. Format</label>
   <select id="format">
@@ -120,52 +160,65 @@
   </select>
 
   <label>6. Pose</label>
-  <select id="pose">
-    <option>Head tilt</option>
-    <option>Looking over shoulder</option>
-    <option>One hand in pocket</option>
-    <option>Arms crossed</option>
-    <option>Walking toward camera</option>
-    <option>Sitting relaxed</option>
-    <option>Custom</option>
-  </select>
+<select id="pose">
+  <option>Head tilt</option>
+  <option>Looking over shoulder</option>
+  <option>One hand in pocket</option>
+  <option>Arms crossed</option>
+  <option>Walking toward camera</option>
+  <option>Sitting relaxed</option>
+  <option>Hands on hips</option>
+  <option>Leaning against wall</option>
+  <option>Jumping mid-air</option>
+  <option>Kneeling</option>
+  <option>Stretching arms</option>
+  <option>Custom</option>
+</select>
 
-  <label>7. Clothing</label>
-  <select id="clothing">
-    <option>Stussy hoodie</option>
-    <option>Graphic tee</option>
-    <option>Oversized jacket</option>
-    <option>Streetwear layers</option>
-    <option>Smart-casual outfit</option>
-    <option>No shirt (gym vibe)</option>
-    <option>Custom</option>
-  </select>
+<label>7. Clothing</label>
+<select id="clothing">
+  <option>Stussy hoodie</option>
+  <option>Graphic tee</option>
+  <option>Oversized jacket</option>
+  <option>Streetwear layers</option>
+  <option>Smart-casual outfit</option>
+  <option>No shirt (gym vibe)</option>
+  <option>Denim jacket and ripped jeans</option>
+  <option>Tracksuit and sneakers</option>
+  <option>Retro windbreaker</option>
+  <option>Beachwear and sunglasses</option>
+  <option>Custom</option>
+</select>
 
-  <label>8. Scenery / Setting</label>
-  <select id="scenery">
-    <option>Neon-lit alley</option>
-    <option>Rooftop skyline</option>
-    <option>Skatepark</option>
-    <option>Subway platform</option>
-    <option>Café corner</option>
-    <option>Mountain trail</option>
-    <option>Art museum</option>
-    <option>Custom</option>
-  </select>
-
+<label>8. Scenery / Setting</label>
+<select id="scenery">
+  <option>Neon-lit alley</option>
+  <option>Rooftop skyline</option>
+  <option>Skatepark</option>
+  <option>Subway platform</option>
+  <option>Café corner</option>
+  <option>Mountain trail</option>
+  <option>Art museum</option>
+  <option>City bridge at sunset</option>
+  <option>Urban basketball court</option>
+  <option>Beach boardwalk</option>
+  <option>Luxury hotel balcony</option>
+  <option>Desert highway</option>
+  <option>Custom</option>
+</select>
+ 
   <label>9. Extras (Accessories, Facial Expression, Time-of-Day)</label>
   <select id="extras">
     <option>None</option>
-    <option>Holding coffee cup, soft smile, early morning</option>
-    <option>Backpack and camera, focused gaze, golden hour</option>
-    <option>Guitar in hand, eyes closed, dusk</option>
-    <option>Skateboard at feet, confident smirk, mid-afternoon</option>
     <option>Custom</option>
   </select>
   <input type="text" id="customExtras" placeholder="If custom, type it here..." />
 
-  <button onclick="generatePrompt()">Generate Prompt</button>
-  <button id="copyBtn" onclick="copyPrompt()">Copy Prompt</button>
+  <div class="center-buttons">
+    <button onclick="generatePrompt()">Generate Prompt</button>
+    <button id="copyBtn" onclick="copyPrompt()">Copy Prompt</button>
+    <a href="#" id="chatLink" target="_blank">Open in ChatGPT ↗</a>
+  </div>
 
   <div id="output"></div>
 
@@ -185,6 +238,8 @@
 
       document.getElementById('output').innerText = prompt;
       document.getElementById('copyBtn').style.display = 'inline-block';
+      document.getElementById('chatLink').href = `https://chat.openai.com/chat?q=${encodeURIComponent(prompt)}`;
+      document.getElementById('chatLink').style.display = 'inline-block';
     }
 
     function copyPrompt() {
@@ -192,6 +247,10 @@
       navigator.clipboard.writeText(text).then(() => {
         alert('Prompt copied to clipboard!');
       });
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
     }
   </script>
 </body>
