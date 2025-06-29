@@ -128,11 +128,12 @@
 
     const form = document.getElementById('form');
     fields.forEach(({ id, label, options }) => {
+      const saved = JSON.parse(localStorage.getItem(id) || '[]');
       const labelEl = document.createElement('label');
       labelEl.innerText = label;
       const select = document.createElement('select');
       select.id = id;
-      options.forEach(opt => {
+      [...options, ...saved].forEach(opt => {
         const optionEl = document.createElement('option');
         optionEl.textContent = opt;
         select.appendChild(optionEl);
@@ -152,7 +153,16 @@
           input.style.display = 'block';
           setTimeout(() => {
             const custom = prompt(`Want to save this custom ${id}? Type it or leave blank to skip:`);
-            if (custom) input.value = custom;
+            if (custom) {
+              input.value = custom;
+              const updated = [...new Set([...saved, custom])];
+              localStorage.setItem(id, JSON.stringify(updated));
+              const newOption = document.createElement('option');
+              newOption.textContent = custom;
+              select.insertBefore(newOption, customOption);
+              select.value = custom;
+              input.style.display = 'none';
+            }
           }, 300);
         } else {
           input.style.display = 'none';
