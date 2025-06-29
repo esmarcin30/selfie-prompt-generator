@@ -24,181 +24,156 @@
       margin: auto;
       transition: all 0.3s ease;
     }
-    body.dark {
-      background: var(--bg-dark);
-      color: var(--text-dark);
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 2rem;
-      color: var(--primary);
-    }
-    label {
-      display: block;
-      margin-top: 20px;
-      font-weight: bold;
-    }
-    select, input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    .custom-input {
-      display: none;
-    }
-    button, a.toggle, #chatLink {
-      margin-top: 20px;
-      padding: 12px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      text-decoration: none;
-      display: inline-block;
-      transition: background 0.2s ease;
-    }
-    button:hover, a.toggle:hover, #chatLink:hover {
-      background-color: var(--accent);
-    }
-    #output {
-      margin-top: 30px;
-      background: var(--card-light);
-      padding: 20px;
-      border-radius: 10px;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 14px;
-    }
-    body.dark #output {
-      background: var(--card-dark);
-    }
-    #copyBtn, #chatLink {
-      margin-right: 10px;
-    }
-    .center-buttons {
-      text-align: center;
-      margin-top: 30px;
-    }
-    .toggle {
-      float: right;
-      background-color: transparent;
-      color: var(--primary);
-      font-weight: bold;
-      border: 2px solid var(--primary);
-    }
-    .toggle:hover {
-      color: var(--accent);
-      border-color: var(--accent);
-    }
+    body.dark { background: var(--bg-dark); color: var(--text-dark);}    
+    h1 { text-align: center; margin-bottom: 20px; font-size: 2rem; color: var(--primary);}    
+    label { display:block; margin-top:20px; font-weight:bold; }
+    select,input[type="text"]{ width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ccc; font-size:1rem; }
+    .custom-input{ display:none; }
+    button,a.toggle,#chatLink{ margin-top:20px; padding:12px 20px; font-size:16px; cursor:pointer; background-color:var(--primary); color:#fff; border:none; border-radius:8px; text-decoration:none; display:inline-block; transition:background .2s ease; }
+    button:hover,a.toggle:hover,#chatLink:hover{ background-color:var(--accent);} 
+    #output{ margin-top:30px; background:var(--card-light); padding:20px; border-radius:10px; white-space:pre-wrap; font-family:monospace; font-size:14px; }
+    body.dark #output{ background:var(--card-dark);} 
+    #copyBtn,#chatLink{ margin-right:10px; }
+    .center-buttons{text-align:center; margin-top:30px;}
+    .toggle{ float:right; background-color:transparent; color:var(--primary); font-weight:bold; border:2px solid var(--primary);} 
+    .toggle:hover{ color:var(--accent); border-color:var(--accent);} 
+    .preset-bar{ margin-top:25px; text-align:center; }
+    .preset-btn{ background:#555; border:none; color:#fff; padding:8px 14px; margin:4px; border-radius:6px; font-size:14px; cursor:pointer; }
+    .preset-btn:hover{ background:#777; }
   </style>
 </head>
 <body>
   <h1>📸 Selfie Prompt Generator</h1>
-
   <a class="toggle" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</a>
+
+  <!-- PRESET SHORTCUTS -->
+  <div class="preset-bar" id="presetBar"></div>
 
   <div id="form"></div>
 
   <div class="center-buttons">
     <button onclick="generatePrompt()">Generate Prompt</button>
-    <button id="copyBtn" onclick="copyPrompt()">Copy Prompt</button>
-    <a href="#" id="chatLink" target="_blank">Open in ChatGPT ↗</a>
+    <button id="copyBtn" onclick="copyPrompt()" style="display:none;">Copy Prompt</button>
+    <a href="#" id="chatLink" target="_blank" style="display:none;">Open in ChatGPT ↗</a>
   </div>
 
   <div id="output"></div>
 
   <script>
-    const fields = [
-      { id: 'format', label: '1. Format', options: ['Portrait --ar 2:3', 'Landscape --ar 3:2', 'Square --ar 1:1', 'Instagram Story --ar 9:16', 'Facebook Cover --ar 16:9', 'Poster --ar 4:5'] },
-      { id: 'camera', label: '2. Camera Angle & Zoom', options: ['Low-angle', 'Eye-level', 'Overhead', 'Close-up', 'Medium shot', 'Wide shot', 'Dutch tilt'] },
-      { id: 'lighting', label: '3. Lighting', options: ['Golden hour', 'Neon glow', 'Soft overcast', 'Backlit with lens flare', 'Harsh direct sun', 'Studio spotlight', 'Candlelight'] },
-      { id: 'mood', label: '4. Mood / Color Grade', options: ['Teal-orange blockbuster', 'Pastel dream', 'Black & white', 'Sepia vintage', 'Cyberpunk neon', 'Warm film glow', 'Muted earth tones'] },
-      { id: 'fx', label: '5. Atmosphere / FX', options: ['Rain', 'Fog', 'Light beams', 'Haze', 'Dust particles', 'Floating confetti', 'Subtle film grain'] },
-      { id: 'pose', label: '6. Pose', options: ['Head tilt', 'Looking over shoulder', 'One hand in pocket', 'Arms crossed', 'Walking toward camera', 'Sitting relaxed', 'Hands on hips', 'Leaning against wall', 'Jumping mid-air', 'Kneeling', 'Stretching arms'] },
-      { id: 'clothing', label: '7. Clothing', options: ['Stussy hoodie', 'Graphic tee', 'Oversized jacket', 'Streetwear layers', 'Smart-casual outfit', 'No shirt (gym vibe)', 'Denim jacket and ripped jeans', 'Tracksuit and sneakers', 'Retro windbreaker', 'Beachwear and sunglasses'] },
-      { id: 'scenery', label: '8. Scenery / Setting', options: ['Neon-lit alley', 'Rooftop skyline', 'Skatepark', 'Subway platform', 'Café corner', 'Mountain trail', 'Art museum', 'City bridge at sunset', 'Urban basketball court', 'Beach boardwalk', 'Luxury hotel balcony', 'Desert highway'] },
-      { id: 'extras', label: '9. Extras (Accessories, Facial Expression, Time-of-Day)', options: ['None', 'Holding coffee cup, soft smile, early morning', 'Backpack and camera, focused gaze, golden hour', 'Guitar in hand, eyes closed, dusk', 'Skateboard at feet, confident smirk, mid-afternoon'] }
+    /* =============================
+       CONFIG  – add your Firebase credentials here if you want cloud sync.
+       Otherwise the app will fallback to localStorage.
+    ==============================*/
+    const useCloud = false; // set true and fill firebaseConfig to enable
+    const firebaseConfig = { /* YOUR FIREBASE CONFIG */ };
+
+    /* ============================= */
+
+    const presets = [
+      {
+        name: 'Club Look',
+        data: {
+          format:'Instagram Story --ar 9:16',
+          camera:'Close-up',
+          lighting:'Neon glow',
+          mood:'Cyberpunk neon',
+          fx:'Light beams',
+          pose:'Looking over shoulder',
+          clothing:'Retro windbreaker',
+          scenery:'Luxury hotel balcony',
+          extras:'None'
+        }
+      },
+      {
+        name:'Travel Look',
+        data:{
+          format:'Portrait --ar 2:3',
+          camera:'Wide shot',
+          lighting:'Golden hour',
+          mood:'Warm film glow',
+          fx:'Dust particles',
+          pose:'Walking toward camera',
+          clothing:'Denim jacket and ripped jeans',
+          scenery:'Beach boardwalk',
+          extras:'Backpack and camera, focused gaze, golden hour'
+        }
+      }
     ];
 
-    const form = document.getElementById('form');
-    fields.forEach(({ id, label, options }) => {
-      const saved = JSON.parse(localStorage.getItem(id) || '[]');
-      const labelEl = document.createElement('label');
-      labelEl.innerText = label;
-      const select = document.createElement('select');
-      select.id = id;
-      [...options, ...saved].forEach(opt => {
-        const optionEl = document.createElement('option');
-        optionEl.textContent = opt;
-        select.appendChild(optionEl);
-      });
-      const customOption = document.createElement('option');
-      customOption.textContent = 'Custom';
-      select.appendChild(customOption);
+    const fields = [
+      { id:'format',   label:'1. Format',  options:['Portrait --ar 2:3','Landscape --ar 3:2','Square --ar 1:1','Instagram Story --ar 9:16','Facebook Cover --ar 16:9','Poster --ar 4:5'] },
+      { id:'camera',   label:'2. Camera Angle & Zoom', options:['Low-angle','Eye-level','Overhead','Close-up','Medium shot','Wide shot','Dutch tilt'] },
+      { id:'lighting', label:'3. Lighting', options:['Golden hour','Neon glow','Soft overcast','Backlit with lens flare','Harsh direct sun','Studio spotlight','Candlelight'] },
+      { id:'mood',     label:'4. Mood / Color Grade', options:['Teal-orange blockbuster','Pastel dream','Black & white','Sepia vintage','Cyberpunk neon','Warm film glow','Muted earth tones'] },
+      { id:'fx',       label:'5. Atmosphere / FX', options:['Rain','Fog','Light beams','Haze','Dust particles','Floating confetti','Subtle film grain'] },
+      { id:'pose',     label:'6. Pose', options:['Head tilt','Looking over shoulder','One hand in pocket','Arms crossed','Walking toward camera','Sitting relaxed','Hands on hips','Leaning against wall','Jumping mid-air','Kneeling','Stretching arms'] },
+      { id:'clothing', label:'7. Clothing', options:['Stussy hoodie','Graphic tee','Oversized jacket','Streetwear layers','Smart-casual outfit','No shirt (gym vibe)','Denim jacket and ripped jeans','Tracksuit and sneakers','Retro windbreaker','Beachwear and sunglasses'] },
+      { id:'scenery',  label:'8. Scenery / Setting', options:['Neon-lit alley','Rooftop skyline','Skatepark','Subway platform','Café corner','Mountain trail','Art museum','City bridge at sunset','Urban basketball court','Beach boardwalk','Luxury hotel balcony','Desert highway'] },
+      { id:'extras',   label:'9. Extras (Accessories, Facial Expression, Time-of-Day)', options:['None','Holding coffee cup, soft smile, early morning','Backpack and camera, focused gaze, golden hour','Guitar in hand, eyes closed, dusk','Skateboard at feet, confident smirk, mid-afternoon'] }
+    ];
 
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'custom-input';
-      input.placeholder = `Enter custom ${label.toLowerCase()}...`;
-      input.id = `custom-${id}`;
-
-      select.addEventListener('change', () => {
-        if (select.value === 'Custom') {
-          input.style.display = 'block';
-          setTimeout(() => {
-            const custom = prompt(`Want to save this custom ${id}? Type it or leave blank to skip:`);
-            if (custom) {
-              input.value = custom;
-              const updated = [...new Set([...saved, custom])];
-              localStorage.setItem(id, JSON.stringify(updated));
-              const newOption = document.createElement('option');
-              newOption.textContent = custom;
-              select.insertBefore(newOption, customOption);
-              select.value = custom;
-              input.style.display = 'none';
-            }
-          }, 300);
-        } else {
-          input.style.display = 'none';
-        }
-      });
-
-      form.appendChild(labelEl);
-      form.appendChild(select);
-      form.appendChild(input);
-    });
-
-    function generatePrompt() {
-      const getValue = id => {
-        const select = document.getElementById(id);
-        const custom = document.getElementById(`custom-${id}`);
-        return select.value === 'Custom' ? (custom.value || '[your custom detail here]') : select.value;
-      };
-
-      const prompt = `Using the photo I’ve provided, generate a high resolution, detailed photograph in ChatGPT format:\n\n` +
-        fields.map(f => `${f.label.split('. ')[1]}: ${getValue(f.id)}`).join('\n');
-
-      document.getElementById('output').innerText = prompt;
-      document.getElementById('copyBtn').style.display = 'inline-block';
-      document.getElementById('chatLink').href = `https://chat.openai.com/chat?q=${encodeURIComponent(prompt)}`;
-      document.getElementById('chatLink').style.display = 'inline-block';
+    /* === Firebase init if enabled === */
+    if(useCloud && typeof firebase==='undefined'){
+      const s=document.createElement('script');s.src='https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';document.head.appendChild(s);
+      const sdb=document.createElement('script');sdb.src='https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';document.head.appendChild(sdb);
+      sdb.onload=()=>{firebase.initializeApp(firebaseConfig);window.db=firebase.firestore();}
     }
 
-    function copyPrompt() {
-      const text = document.getElementById('output').innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Prompt copied to clipboard!');
+    const form=document.getElementById('form');
+    fields.forEach(({id,label,options})=>createField(id,label,options));
+    renderPresets();
+
+    function createField(id,label,options){
+      const saved=getStore(id);
+      const labelEl=document.createElement('label');labelEl.innerText=label;
+      const select=document.createElement('select');select.id=id;
+      [...options,...saved].forEach(opt=>{const o=document.createElement('option');o.textContent=opt;select.appendChild(o);});
+      const customOpt=document.createElement('option');customOpt.textContent='Custom';select.appendChild(customOpt);
+      const input=document.createElement('input');input.type='text';input.className='custom-input';input.placeholder=`Enter custom ${label.toLowerCase()}...`;input.id=`custom-${id}`;
+      select.addEventListener('change',()=>{
+        if(select.value==='Custom'){
+          input.style.display='block';
+          setTimeout(()=>{const custom=prompt(`Save custom ${id}?`);if(custom){input.value=custom;saveToStore(id,custom);const newO=document.createElement('option');newO.textContent=custom;select.insertBefore(newO,customOpt);select.value=custom;input.style.display='none';}},300);
+        }else input.style.display='none';
+      });
+      form.appendChild(labelEl);form.appendChild(select);form.appendChild(input);
+    }
+
+    function renderPresets(){
+      const bar=document.getElementById('presetBar');
+      presets.forEach(p=>{const b=document.createElement('button');b.textContent=p.name;b.className='preset-btn';b.onclick=()=>applyPreset(p.data);bar.appendChild(b);});
+    }
+
+    function applyPreset(data){
+      Object.keys(data).forEach(key=>{
+        const sel=document.getElementById(key);
+        if(!sel) return;
+        let option=[...sel.options].find(o=>o.textContent===data[key]);
+        if(!option){option=document.createElement('option');option.textContent=data[key];sel.insertBefore(option,sel.lastChild);} sel.value=data[key];
       });
     }
 
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark');
+    function generatePrompt(){
+      const getVal=id=>{const sel=document.getElementById(id);const custom=document.getElementById(`custom-${id}`);return sel.value==='Custom'?(custom.value||'[your custom detail here]'):sel.value};
+      const prompt='Using the photo I’ve provided, generate a high resolution, detailed photograph in ChatGPT format:\n\n'+fields.map(f=>`${f.label.split('. ')[1]}: ${getVal(f.id)}`).join('\n');
+      document.getElementById('output').innerText=prompt;
+      document.getElementById('copyBtn').style.display='inline-block';
+      document.getElementById('chatLink').href=`https://chat.openai.com/chat?q=${encodeURIComponent(prompt)}`;
+      document.getElementById('chatLink').style.display='inline-block';
+    }
+
+    function copyPrompt(){navigator.clipboard.writeText(document.getElementById('output').innerText).then(()=>alert('Prompt copied to clipboard!'));}
+
+    function toggleDarkMode(){document.body.classList.toggle('dark');}
+
+    /* ==== Local/Cloud store helpers ==== */
+    function getStore(key){
+      if(useCloud&&window.db){/* fetch cloud store later */return [];} else return JSON.parse(localStorage.getItem(key)||'[]');
+    }
+    function saveToStore(key,val){
+      if(useCloud&&window.db){/* push to firestore */} else {
+        const arr=new Set(JSON.parse(localStorage.getItem(key)||'[]'));arr.add(val);localStorage.setItem(key,JSON.stringify([...arr]));
+      }
     }
   </script>
 </body>
