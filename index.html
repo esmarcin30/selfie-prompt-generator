@@ -127,14 +127,44 @@
       const saved=getStore(id);
       const labelEl=document.createElement('label');labelEl.innerText=label;
       const select=document.createElement('select');select.id=id;
-      [...options,...saved].forEach(opt=>{const o=document.createElement('option');o.textContent=opt;select.appendChild(o);});
+      // Combine options and remove duplicates
+      const allOptions = [...new Set([...options, ...saved])];
+      allOptions.forEach(opt=>{const o=document.createElement('option');o.textContent=opt;select.appendChild(o);});
       const customOpt=document.createElement('option');customOpt.textContent='Custom';select.appendChild(customOpt);
       const input=document.createElement('input');input.type='text';input.className='custom-input';input.placeholder=`Enter custom ${label.toLowerCase()}...`;input.id=`custom-${id}`;
       select.addEventListener('change',()=>{
         if(select.value==='Custom'){
           input.style.display='block';
-          setTimeout(()=>{const custom=prompt(`Save custom ${id}?`);if(custom){input.value=custom;saveToStore(id,custom);const newO=document.createElement('option');newO.textContent=custom;select.insertBefore(newO,customOpt);select.value=custom;input.style.display='none';}},300);
+          input.focus();
         }else input.style.display='none';
+      });
+      
+      // Handle custom input submission
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && input.value.trim()) {
+          const customValue = input.value.trim();
+          saveToStore(id, customValue);
+          const newO = document.createElement('option');
+          newO.textContent = customValue;
+          select.insertBefore(newO, customOpt);
+          select.value = customValue;
+          input.style.display = 'none';
+          input.value = '';
+        }
+      });
+      
+      // Handle focus loss on custom input
+      input.addEventListener('blur', () => {
+        if (input.value.trim()) {
+          const customValue = input.value.trim();
+          saveToStore(id, customValue);
+          const newO = document.createElement('option');
+          newO.textContent = customValue;
+          select.insertBefore(newO, customOpt);
+          select.value = customValue;
+          input.value = '';
+        }
+        input.style.display = 'none';
       });
       form.appendChild(labelEl);form.appendChild(select);form.appendChild(input);
     }
@@ -158,8 +188,17 @@
       const prompt='Using the photo I’ve provided, generate a high resolution, detailed photograph in ChatGPT format:\n\n'+fields.map(f=>`${f.label.split('. ')[1]}: ${getVal(f.id)}`).join('\n');
       document.getElementById('output').innerText=prompt;
       document.getElementById('copyBtn').style.display='inline-block';
-      document.getElementById('chatLink').href=`https://chat.openai.com/chat?q=${encodeURIComponent(prompt)}`;
-      document.getElementById('chatLink').style.display='inline-block';
+      // Properly encode and limit prompt length to prevent URL injection
+      const encodedPrompt = encodeURIComponent(prompt.substring(0, 2000)); // Limit length
+      const chatUrl = `https://chat.openai.com/chat?q=${encodedPrompt}`;
+      // Validate the URL is still pointing to OpenAI domain
+      if (chatUrl.startsWith('https://chat.openai.com/')) {
+        document.getElementById('chatLink').href = chatUrl;
+        document.getElementById('chatLink').style.display='inline-block';
+      } else {
+        console.error('URL validation failed - potential injection attempt');
+        document.getElementById('chatLink').style.display='none';
+      }
     }
 
     function copyPrompt(){navigator.clipboard.writeText(document.getElementById('output').innerText).then(()=>alert('Prompt copied to clipboard!'));}
